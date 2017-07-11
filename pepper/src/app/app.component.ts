@@ -21,9 +21,17 @@ export class AppComponent implements OnInit {
     this.restaurants = this.db.list('/restaurants')
       .map(restaurants => {
         console.log('Before Map', restaurants);
-        restaurants.map(x => {
-          x.cuisineType = this.db.object(`/cuisines/${x.cuisine}`);
+        restaurants.map(restaurant => {
+          restaurant.cuisineType = this.db.object(`/cuisines/${restaurant.cuisine}`);
+
+          restaurant.featureTypes = [];
+
+          for(let f in restaurant.features) {
+            restaurant.featureTypes.push(this.db.object(`/features/${f}`))
+          }
+
         });
+
         console.log('AfterMap', restaurants);
         return restaurants;
       });

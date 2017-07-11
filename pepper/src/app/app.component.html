@@ -8,5 +8,10 @@
 <ul>
   <li *ngFor="let r of restaurants | async">
     {{ r.name }} - {{ (r.cuisineType | async)?.$value }}
+    <ul>
+      <li *ngFor="let f of r.featureTypes">
+        {{(f | async)?.$value}}
+      </li>
+    </ul>
   </li>
 </ul>
