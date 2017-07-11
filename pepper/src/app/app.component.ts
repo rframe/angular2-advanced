@@ -19,8 +19,10 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cuisines = this.db.list('/cuisines');
-    this.restaurants = this.db.list('/restaurants')
+    this.cuisines = this.db.list('/cuisines', {query: { orderByValue: true }});
+    this.restaurants = this.db.list('/restaurants',
+      //{query: { orderByChild: 'name' }})
+      {query: { orderByChild: 'address/city' }})
       .map(restaurants => {
         console.log('Before Map', restaurants);
         restaurants.map(restaurant => {
