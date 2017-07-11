@@ -43,9 +43,9 @@ export class AppComponent implements OnInit {
       // to filter you should order by that value first
       query: {
         orderByChild: 'rating',
-        // equalTo: 5
-        startAt: 3,
-        endAt: 4
+        equalTo: 5,
+        limitToFirst: 50
+        // limitToLast: 50
       }
     })
       .map(restaurants => {
