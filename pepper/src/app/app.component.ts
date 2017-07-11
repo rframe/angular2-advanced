@@ -19,7 +19,26 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cuisines = this.db.list('/cuisines', {query: { orderByValue: true }});
+    // Current firebase rules looks like this
+    // {
+    //   "rules": {
+    //     ".read": "auth != null || true",
+    //     ".write": "auth != null || true",
+    //     "restaurants": {
+    //       ".indexOn": ["rating", "address/city"]
+    //     },
+    //     "cuisines": {
+    //       ".indexOn": ".value"
+    //     }
+    //   }
+    // }
+    this.cuisines = this.db.list('/cuisines', {
+      // Add index on firebase console for ".value"
+      query: {
+        orderByValue: true,
+        equalTo: 'Italian'
+      }
+    });
     this.restaurants = this.db.list('/restaurants', {
       // to filter you should order by that value first
       query: {
