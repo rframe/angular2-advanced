@@ -20,9 +20,15 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.cuisines = this.db.list('/cuisines', {query: { orderByValue: true }});
-    this.restaurants = this.db.list('/restaurants',
-      //{query: { orderByChild: 'name' }})
-      {query: { orderByChild: 'address/city' }})
+    this.restaurants = this.db.list('/restaurants', {
+      // to filter you should order by that value first
+      query: {
+        orderByChild: 'rating',
+        // equalTo: 5
+        startAt: 3,
+        endAt: 4
+      }
+    })
       .map(restaurants => {
         console.log('Before Map', restaurants);
         restaurants.map(restaurant => {
