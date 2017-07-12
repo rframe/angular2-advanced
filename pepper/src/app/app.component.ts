@@ -1,9 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AngularFireDatabase, FirebaseListObservable, FirebaseObjectObservable} from 'angularfire2/database';
+import {AngularFireAuth, AngularFireAuthProvider, AngularFireAuthModule, AUTH_PROVIDERS} from 'angularfire2/auth';
+// import {} from 'angularfire2/angularfire2';
 import {Subscription} from 'rxjs/Subscription';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/take'
 import {Observable} from 'rxjs/Observable';
+import * as firebase from 'firebase/app';
+import AuthCredential = firebase.auth.AuthCredential;
 
 @Component({
   selector: 'app-root',
@@ -13,51 +17,40 @@ import {Observable} from 'rxjs/Observable';
 export class AppComponent implements OnInit {
   cuisines: FirebaseListObservable<any[]>;
   restaurants: Observable<any[]>;
+  displayName;
+  photoUrl;
 
-  constructor(private db: AngularFireDatabase) {
+  constructor(private db: AngularFireDatabase, public afAuth: AngularFireAuth) {
   }
 
   ngOnInit(): void {
-    this.cuisines = this.db.list('/cuisines');
-    this.restaurants = this.db.list('/restaurants')
-      .map(restaurants => {
-        console.log('Before Map', restaurants);
-        restaurants.map(restaurant => {
-          restaurant.cuisineType = this.db.object(`/cuisines/${restaurant.cuisine}`);
+    this.afAuth.authState.subscribe(x => {
+      if (!x) {
+        console.log('Not Logged In');
+        this.displayName = null;
+        this.photoUrl = null;
+        return;
+      }
 
-          restaurant.featureTypes = [];
+      console.log('Logged In', x);
+      this.displayName = x.displayName
+      this.photoUrl = x.photoURL
+    })
+  }
 
-          for(let f in restaurant.features) {
-            restaurant.featureTypes.push(this.db.object(`/features/${f}`))
-          }
+  login() {
+    const facebook = (new firebase.auth.FacebookAuthProvider()
+      .addScope('public_profile') as firebase.auth.FacebookAuthProvider)
+      .addScope('user_friends');
+    this.afAuth.auth.signInWithPopup(facebook)
+      .then((authState => {
+        this.db.object((`users/${authState.user.uid}`))
+          .update({accessToken: authState.credential.accessToken});
+      }))
+  }
 
-        });
-
-        console.log('AfterMap', restaurants);
-        return restaurants;
-      });
-
-    //Insert Object into multiple places
-    // this.db.list('/restaurants').push({})
-    //   .then(x => {
-    //     // x.key
-    //     let restaurant ={ name: 'My New Restaurant'};
-    //     console.log(x.key);
-    //     let update = {};
-    //     //update.firstName = '';
-    //     update[`restaurants/${x.key}`] = restaurant;
-    //     update[`restaurants-by-city/camberwell/${x.key}`] = restaurant;
-    //     // update[`restaurants-by-city/camberwell/${x.key}`] = true;
-    //     this.db.object('/').update(update);
-    //   })
-
-    //Remove object from multiple places
-    // let update = {}
-    // let key = '-KooARqPnrrky7r1OC6d';
-    // update[`restaurants/${key}`] = null;
-    // update[`restaurants-by-city/camberwell/${key}`] = null;
-    // this.db.object('/').update(update);
-
+  logout() {
+    this.afAuth.auth.signOut().then(x => {console.log('user is signed out')});
   }
 }
 

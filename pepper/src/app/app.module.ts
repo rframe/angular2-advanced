@@ -6,6 +6,7 @@ import {AngularFireModule} from 'angularfire2';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import {AngularFireDatabase} from "angularfire2/database";
+import {AngularFireAuth} from 'angularfire2/auth';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAvf141GZyKEj0IcV4G6QoxGEGc-zE3UUM",
@@ -26,7 +27,7 @@ export const firebaseConfig = {
     HttpModule,
     AngularFireModule.initializeApp(firebaseConfig)
   ],
-  providers: [AngularFireDatabase],
+  providers: [AngularFireDatabase, AngularFireAuth],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
