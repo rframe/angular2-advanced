@@ -13,41 +13,13 @@ import {Observable} from 'rxjs/Observable';
 export class AppComponent implements OnInit {
   cuisines: FirebaseListObservable<any[]>;
   restaurants: Observable<any[]>;
-  exists;
 
   constructor(private db: AngularFireDatabase) {
   }
 
   ngOnInit(): void {
-    // Current firebase rules looks like this
-    // {
-    //   "rules": {
-    //     ".read": "auth != null || true",
-    //     ".write": "auth != null || true",
-    //     "restaurants": {
-    //       ".indexOn": ["rating", "address/city"]
-    //     },
-    //     "cuisines": {
-    //       ".indexOn": ".value"
-    //     }
-    //   }
-    // }
-    this.cuisines = this.db.list('/cuisines', {
-      // Add index on firebase console for ".value"
-      query: {
-        orderByValue: true,
-        equalTo: 'Italian'
-      }
-    });
-    this.restaurants = this.db.list('/restaurants', {
-      // to filter you should order by that value first
-      query: {
-        orderByChild: 'rating',
-        equalTo: 5,
-        limitToFirst: 50
-        // limitToLast: 50
-      }
-    })
+    this.cuisines = this.db.list('/cuisines');
+    this.restaurants = this.db.list('/restaurants')
       .map(restaurants => {
         console.log('Before Map', restaurants);
         restaurants.map(restaurant => {
@@ -65,15 +37,27 @@ export class AppComponent implements OnInit {
         return restaurants;
       });
 
-    this.exists = this.db.object('/restaurants/1/features/1');
+    //Insert Object into multiple places
+    // this.db.list('/restaurants').push({})
+    //   .then(x => {
+    //     // x.key
+    //     let restaurant ={ name: 'My New Restaurant'};
+    //     console.log(x.key);
+    //     let update = {};
+    //     //update.firstName = '';
+    //     update[`restaurants/${x.key}`] = restaurant;
+    //     update[`restaurants-by-city/camberwell/${x.key}`] = restaurant;
+    //     // update[`restaurants-by-city/camberwell/${x.key}`] = true;
+    //     this.db.object('/').update(update);
+    //   })
 
-    this.exists.take(1).subscribe(x => {
-      if (x && !!x.$value) {
-        console.log('EXISTS');
-      } else {
-        console.log('NOT EXISTS')
-      }
-    });
+    //Remove object from multiple places
+    // let update = {}
+    // let key = '-KooARqPnrrky7r1OC6d';
+    // update[`restaurants/${key}`] = null;
+    // update[`restaurants-by-city/camberwell/${key}`] = null;
+    // this.db.object('/').update(update);
+
   }
 }
 
