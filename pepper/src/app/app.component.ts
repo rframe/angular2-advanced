@@ -8,6 +8,7 @@ import 'rxjs/add/operator/take'
 import {Observable} from 'rxjs/Observable';
 import * as firebase from 'firebase/app';
 import AuthCredential = firebase.auth.AuthCredential;
+import {Http} from '@angular/http';
 
 @Component({
   selector: 'app-root',
@@ -20,21 +21,37 @@ export class AppComponent implements OnInit {
   displayName;
   photoUrl;
 
-  constructor(private db: AngularFireDatabase, public afAuth: AngularFireAuth) {
+  constructor(private db: AngularFireDatabase,
+              private afAuth: AngularFireAuth,
+              private http: Http) {
   }
 
   ngOnInit(): void {
     this.afAuth.authState.subscribe(x => {
       if (!x) {
-        console.log('Not Logged In');
         this.displayName = null;
         this.photoUrl = null;
         return;
       }
 
-      console.log('Logged In', x);
-      this.displayName = x.displayName
-      this.photoUrl = x.photoURL
+      const facebookProvider = x.providerData.find(x => x.providerId === new firebase.auth.FacebookAuthProvider().providerId);
+      let userRef = this.db.object(`/users/${x.uid}`);
+
+      userRef.subscribe(user => {
+        if(!!facebookProvider) {
+          let url = `https://graph.facebook.com/v2.8/${facebookProvider.uid}?fields=first_name,last_name&access_token=${user.accessToken}`;
+          this.http.get(url).subscribe(response => {
+            let user = response.json();
+            userRef.update({
+              firstName: user.first_name,
+              lastName: user.last_name
+            });
+          });
+        }
+      });
+
+      this.displayName = x.displayName;
+      this.photoUrl = x.photoURL;
     })
   }
 
