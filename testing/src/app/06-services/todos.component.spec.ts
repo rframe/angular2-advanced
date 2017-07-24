@@ -1,8 +1,9 @@
 import { TodosComponent } from './todos.component';
 import { TodoService } from './todo.service';
-import {of} from 'rxjs/observable/of';
-import 'rxjs/add/observable/from';
 import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/observable/from';
+import 'rxjs/add/observable/empty';
+import 'rxjs/add/observable/throw';
 
 describe('TodosComponent', () => {
   let component: TodosComponent;
@@ -11,28 +12,56 @@ describe('TodosComponent', () => {
   beforeEach(() => {
     service = new TodoService(null);
 
-    // Other option is to stub
     component = new TodosComponent(service);
   });
 
   it('should set todos property with the items returned from the server', () => {
     let todos = [1,2,3];
     spyOn(service, 'getTodos').and.callFake(() => {
-      // return of([])
       return Observable.from([todos])
-      // return Observable.from([[
-      //   {id: 1, title: 'a'},
-      //   {id: 2, title: 'b'},
-      //   {id: 3, title: 'c'}
-      // ]]);
     });
 
     component.ngOnInit();
 
-    // To General
-    // expect(component.todos.length).toBeGreaterThan(0);
-    // To General
-    // expect(component.todos.length).toBe(3);
     expect(component.todos).toBe(todos);
+  });
+
+  it('should call the serve to save the changes when a new todo item is added', () => {
+    let spy = spyOn(service, 'add').and.callFake(t => {
+      return Observable.empty();
+    });
+
+    component.add();
+
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('should add the new todo returned from the server', () => {
+    let todo = {id:1, title: ''};
+    let spy = spyOn(service, 'add').and.callFake(t => {
+      return Observable.from([todo]);
+    });
+
+    component.add();
+
+    expect(component.todos.indexOf(todo)).toBeGreaterThan(-1);
+  });
+
+  it('should add the new todo returned from the server - cleaner', () => {
+    let todo = {id:1, title: ''};
+    let spy = spyOn(service, 'add').and.returnValue(Observable.from([todo]));
+
+    component.add();
+
+    expect(component.todos.indexOf(todo)).toBeGreaterThan(-1);
+  });
+
+  it('should set the message property if server returns an error when adding a new todo', () => {
+    const error = 'error from the server';
+    let spy = spyOn(service, 'add').and.returnValue(Observable.throw(error));
+
+    component.add();
+
+    expect(component.message).toBe(error);
   });
 });
