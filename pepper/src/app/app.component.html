@@ -1,5 +1,6 @@
 <h1>Hello {{displayName}}</h1>
-<img *ngIf="!!photoUrl" src="{{photoUrl}}" alt="">
 <br>
+<button (click)="register()">Register</button>
 <button (click)="login()">Login</button>
 <button (click)="logout()">Logout</button>
+<div *ngIf="error">{{error}}</div>

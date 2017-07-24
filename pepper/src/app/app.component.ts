@@ -20,6 +20,7 @@ export class AppComponent implements OnInit {
   restaurants: Observable<any[]>;
   displayName;
   photoUrl;
+  error;
 
   constructor(private db: AngularFireDatabase,
               private afAuth: AngularFireAuth,
@@ -27,47 +28,27 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.afAuth.authState.subscribe(x => {
-      if (!x) {
-        this.displayName = null;
-        this.photoUrl = null;
-        return;
-      }
-
-      const facebookProvider = x.providerData.find(x => x.providerId === new firebase.auth.FacebookAuthProvider().providerId);
-      let userRef = this.db.object(`/users/${x.uid}`);
-
-      userRef.subscribe(user => {
-        if(!!facebookProvider) {
-          let url = `https://graph.facebook.com/v2.8/${facebookProvider.uid}?fields=first_name,last_name&access_token=${user.accessToken}`;
-          this.http.get(url).subscribe(response => {
-            let user = response.json();
-            userRef.update({
-              firstName: user.first_name,
-              lastName: user.last_name
-            });
-          });
-        }
-      });
-
-      this.displayName = x.displayName;
-      this.photoUrl = x.photoURL;
+    this.afAuth.authState.subscribe(authState => {
     })
   }
 
+  register() {
+    this.db.app.auth().createUserWithEmailAndPassword('rframe83@gmail.com', 'Testme12')
+      .then(authState => {
+        // authState.auth.sendEmailVerification();
+        console.log('Register-then', authState)
+      })
+      .catch(error => console.log('Register-error', error));
+  }
+
   login() {
-    const facebook = (new firebase.auth.FacebookAuthProvider()
-      .addScope('public_profile') as firebase.auth.FacebookAuthProvider)
-      .addScope('user_friends');
-    this.afAuth.auth.signInWithPopup(facebook)
-      .then((authState => {
-        this.db.object((`users/${authState.user.uid}`))
-          .update({accessToken: authState.credential.accessToken});
-      }))
+    this.db.app.auth().signInWithEmailAndPassword('rframe83@gmail.com', 'Testme12')
+      .then(authState => {console.log('Login-then', authState)})
+      .catch(error => this.error = error.message);
   }
 
   logout() {
-    this.afAuth.auth.signOut().then(x => {console.log('user is signed out')});
+    this.db.app.auth().signOut();
   }
 }
 
