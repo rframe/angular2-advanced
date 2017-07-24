@@ -4,13 +4,15 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { TodosComponent } from './todos.component';
+import {TodoService} from './todo.service';
+import {HttpModule} from '@angular/http';
 
 //NOTE: I've deliberately excluded this suite from running
-// because the test will fail. This is because we have not 
-// provided the TodoService as a dependency to TodosComponent. 
-// 
+// because the test will fail. This is because we have not
+// provided the TodoService as a dependency to TodosComponent.
+//
 // When you get to Lecture 6 (Providing Dependencies), be sure
-// to remove "x" from "xdescribe" below. 
+// to remove "x" from "xdescribe" below.
 
 xdescribe('TodosComponent', () => {
   let component: TodosComponent;
@@ -18,7 +20,9 @@ xdescribe('TodosComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TodosComponent ]
+      imports: [HttpModule],
+      declarations: [ TodosComponent ],
+      providers: [TodoService]
     })
     .compileComponents();
   }));
